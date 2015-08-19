@@ -91,8 +91,8 @@ from kivy.graphics import Rectangle
 from kivy.uix.widget import Widget
 from kivy.base import EventLoop
 from kivy.core.image import Image
-from kivy.ext.mpl.backend_kivy import FigureCanvasKivy, FigureManagerKivy, \
-                                show, new_figure_manager
+from kivy.garden.matplotlib.backend_kivy import FigureCanvasKivy,\
+                            FigureManagerKivy, show, new_figure_manager
 
 register_backend('png', 'backend_kivyagg', 'PNG File Format')
 

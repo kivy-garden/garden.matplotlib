@@ -895,7 +895,6 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         self.entered_figure = True
         self.figure = figure
         super(FigureCanvasKivy, self).__init__(figure=self.figure, **kwargs)
-        self._isDrawn = False
 
     def draw(self):
         '''Draw the figure using the KivyRenderer
@@ -904,7 +903,6 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         self.canvas.clear()
         self._renderer = RendererKivy(self)
         self.figure.draw(self._renderer)
-        self._isDrawn = True
 
     def on_touch_down(self, touch):
         '''Kivy Event to trigger the following matplotlib events:
@@ -1099,3 +1097,4 @@ class FigureManagerKivy(FigureManagerBase):
 '''
 FigureCanvas = FigureCanvasKivy
 FigureManager = FigureManagerKivy
+NavigationToolbar = NavigationToolbar2Kivy

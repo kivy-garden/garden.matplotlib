@@ -2,7 +2,7 @@
 # a bar plot with errorbars
 import matplotlib
 matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
-#matplotlib.use('Gtk')
+#matplotlib.use('GtkCairo')
 
 import numpy as np
 import matplotlib.pyplot as plt

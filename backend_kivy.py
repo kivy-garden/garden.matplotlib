@@ -183,6 +183,7 @@ _mpl_1_5 = LooseVersion(matplotlib.__version__) >= LooseVersion('1.5.0')
 import numpy as np
 import io
 import textwrap
+import uuid
 from functools import partial
 from math import cos, sin, pi
 
@@ -287,6 +288,7 @@ class RendererKivy(RendererBase):
         self.mathtext_parser = MathTextParser("Bitmap")
         self.list_goraud_triangles = []
         self.clip_rectangles = []
+        self.labels_inside_plot = []
 
     def contains(self, widget, x, y):
         '''Returns whether or not a point is inside the widget. The value
@@ -456,7 +458,7 @@ class RendererKivy(RendererBase):
             l, b, w, h = bbox.bounds
         else:
             l = 0
-            b = 0,
+            b = 0
             w = self.widget.width
             h = self.widget.height
         h, w = im.get_size_out()
@@ -531,10 +533,6 @@ class RendererKivy(RendererBase):
         x += self.widget.x
         y += self.widget.y
 
-#         with self.widget.canvas:
-#             Color(1.0, 1.0, 0.0, 1.0)
-#             Rectangle(pos=(x,y), size=(w,h))
-
         if ismath:
             self.draw_mathtext(gc, x, y, s, prop, angle)
         else:
@@ -550,35 +548,16 @@ class RendererKivy(RendererBase):
             if weight_as_number(prop.get_weight()) > 500:
                 plot_text.bold = True
             plot_text.refresh()
-            
-            newclip = self.handle_clip_rectangle(gc, x, y)
-            if newclip > -1:
-                print("s", s)
-                print("prop", prop)
-                with self.clip_rectangles[newclip].canvas:
-                    Color(*gc.get_rgb())
-                    if isinstance(angle, float):
-                        PushMatrix()
-                        Rotate(angle=angle, origin=(int(x), int(y)))
-                        Rectangle(pos=(int(x), int(y)), texture=plot_text.texture,
-                                  size=plot_text.texture.size)
-                        PopMatrix()
-                    else:
-                        Rectangle(pos=(int(x), int(y)), texture=plot_text.texture,
-                                  size=plot_text.texture.size)
-            else:
-                print("s2", s)
-                print("prop2", prop)
-                with self.widget.canvas:
-                    if isinstance(angle, float):
-                        PushMatrix()
-                        Rotate(angle=angle, origin=(int(x), int(y)))
-                        Rectangle(pos=(int(x), int(y)), texture=plot_text.texture,
-                                  size=plot_text.texture.size)
-                        PopMatrix()
-                    else:
-                        Rectangle(pos=(int(x), int(y)), texture=plot_text.texture,
-                                  size=plot_text.texture.size)
+            with self.widget.canvas:
+                if isinstance(angle, float):
+                    PushMatrix()
+                    Rotate(angle=angle, origin=(int(x), int(y)))
+                    Rectangle(pos=(int(x), int(y)), texture=plot_text.texture,
+                              size=plot_text.texture.size)
+                    PopMatrix()
+                else:
+                    Rectangle(pos=(int(x), int(y)), texture=plot_text.texture,
+                              size=plot_text.texture.size)
 
     def draw_mathtext(self, gc, x, y, s, prop, angle):
         '''Draw the math text using matplotlib.mathtext. The position
@@ -684,7 +663,7 @@ class RendererKivy(RendererBase):
         else:
             plot_text = CoreLabel(font_size=prop.get_size_in_points(),
                             font_name=prop.get_name())
-        plot_text.text = str(s.encode("utf-8"))
+        plot_text.text = six.text_type("{}".format(s))
         plot_text.refresh()
         return plot_text.texture.size[0], plot_text.texture.size[1], 1
 
@@ -760,6 +739,7 @@ class NavigationToolbar2Kivy(NavigationToolbar2):
         actionview.add_widget(actionoverflow)
         actionview.use_separator = True
         self.actionbar.add_widget(actionview)
+        id_group = uuid.uuid4()
         for text, tooltip_text, image_file, callback in self.toolitems:
             if text is None:
                 actionview.add_widget(ActionSeparator())
@@ -767,7 +747,7 @@ class NavigationToolbar2Kivy(NavigationToolbar2):
             fname = os.path.join(basedir, image_file + '.png')
             if text in ['Pan', 'Zoom']:
                 action_button = ActionToggleButton(text=text, icon=fname,
-                                                   group='pz')
+                                                   group=id_group)
             else:
                 action_button = ActionButton(text=text, icon=fname)
             action_button.bind(on_press=getattr(self, callback))
@@ -797,13 +777,18 @@ class NavigationToolbar2Kivy(NavigationToolbar2):
     def draw_rubberband(self, event, x0, y0, x1, y1):
         w = abs(x1 - x0)
         h = abs(y1 - y0)
-        rect = [int(val)for val in (min(x0, x1), min(y0, y1), w, h)]
+        rect = [int(val)for val in (min(x0, x1) + self.canvas.x, min(y0, y1)
+                        + self.canvas.y, w, h)]
         if self.lastrect is None:
             self.canvas.canvas.add(Color(*self.rubberband_color))
         else:
             self.canvas.canvas.remove(self.lastrect)
-        self.lastrect = Line(rectangle=rect, width=1.0, dash_length=5.0,
-                dash_offset=5.0)
+        self.lastrect = InstructionGroup()
+        self.lastrect.add(Line(rectangle=rect, width=1.0, dash_length=5.0,
+                dash_offset=5.0))
+        self.lastrect.add(Color(1.0, 0.0, 0.0, 0.2))
+        self.lastrect.add(Rectangle(pos=(rect[0], rect[1]),
+                                    size=(rect[2], rect[3])))
         self.canvas.canvas.add(self.lastrect)
 
     def release_zoom(self, event):

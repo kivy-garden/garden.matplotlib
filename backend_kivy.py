@@ -550,16 +550,35 @@ class RendererKivy(RendererBase):
             if weight_as_number(prop.get_weight()) > 500:
                 plot_text.bold = True
             plot_text.refresh()
-            with self.widget.canvas:
-                if isinstance(angle, float):
-                    PushMatrix()
-                    Rotate(angle=angle, origin=(int(x), int(y)))
-                    Rectangle(pos=(int(x), int(y)), texture=plot_text.texture,
-                              size=plot_text.texture.size)
-                    PopMatrix()
-                else:
-                    Rectangle(pos=(int(x), int(y)), texture=plot_text.texture,
-                              size=plot_text.texture.size)
+            
+            newclip = self.handle_clip_rectangle(gc, x, y)
+            if newclip > -1:
+                print("s", s)
+                print("prop", prop)
+                with self.clip_rectangles[newclip].canvas:
+                    Color(*gc.get_rgb())
+                    if isinstance(angle, float):
+                        PushMatrix()
+                        Rotate(angle=angle, origin=(int(x), int(y)))
+                        Rectangle(pos=(int(x), int(y)), texture=plot_text.texture,
+                                  size=plot_text.texture.size)
+                        PopMatrix()
+                    else:
+                        Rectangle(pos=(int(x), int(y)), texture=plot_text.texture,
+                                  size=plot_text.texture.size)
+            else:
+                print("s2", s)
+                print("prop2", prop)
+                with self.widget.canvas:
+                    if isinstance(angle, float):
+                        PushMatrix()
+                        Rotate(angle=angle, origin=(int(x), int(y)))
+                        Rectangle(pos=(int(x), int(y)), texture=plot_text.texture,
+                                  size=plot_text.texture.size)
+                        PopMatrix()
+                    else:
+                        Rectangle(pos=(int(x), int(y)), texture=plot_text.texture,
+                                  size=plot_text.texture.size)
 
     def draw_mathtext(self, gc, x, y, s, prop, angle):
         '''Draw the math text using matplotlib.mathtext. The position

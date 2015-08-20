@@ -2,7 +2,7 @@
 # a bar plot with errorbars
 import matplotlib
 matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
-#matplotlib.use('Gtk')
+#matplotlib.use('GtkCairo')
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -60,7 +60,7 @@ figure.canvas.mpl_connect('button_press_event', press)
 figure.canvas.mpl_connect('button_release_event', release)
 figure.canvas.mpl_connect('key_press_event', keypress)
 figure.canvas.mpl_connect('key_release_event', keyup)
-figure.canvas.mpl_connect('motion_notify_event', motionnotify)
+# figure.canvas.mpl_connect('motion_notify_event', motionnotify)
 figure.canvas.mpl_connect('resize_event', resize)
 figure.canvas.mpl_connect('scroll_event', scroll)
 figure.canvas.mpl_connect('figure_enter_event', figure_enter)

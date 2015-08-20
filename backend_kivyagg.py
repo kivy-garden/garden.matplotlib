@@ -92,7 +92,8 @@ from kivy.uix.widget import Widget
 from kivy.base import EventLoop
 from kivy.core.image import Image
 from kivy.garden.matplotlib.backend_kivy import FigureCanvasKivy,\
-                            FigureManagerKivy, show, new_figure_manager
+                            FigureManagerKivy, show, new_figure_manager,\
+                            NavigationToolbar2Kivy
 
 register_backend('png', 'backend_kivyagg', 'PNG File Format')
 
@@ -134,7 +135,6 @@ class FigureCanvasKivyAgg(FigureCanvasKivy, FigureCanvasAgg):
         '''
         self.canvas.clear()
         FigureCanvasAgg.draw(self)
-        update = False
         if self.blitbox is None:
             l, b, w, h = self.figure.bbox.bounds
             w, h = int(w), int(h)
@@ -147,17 +147,10 @@ class FigureCanvasKivyAgg(FigureCanvasKivy, FigureCanvasAgg):
             t = int(b) + h
             reg = self.copy_from_bbox(bbox)
             buf_rgba = reg.to_string()
-        if self.img_texture is not None:
-            oldw, oldh = self.img_texture.size
-            if oldw != w or oldh != h:
-                update = True
-        if update or self.img_texture is None:
-            texture = Texture.create(size=(w, h))
-            texture.flip_vertical()
-            with self.canvas:
-                Rectangle(texture=texture, pos=self.pos, size=(w, h))
-        else:
-            texture = self.img_texture
+        texture = Texture.create(size=(w, h))
+        texture.flip_vertical()
+        with self.canvas:
+            Rectangle(texture=texture, pos=self.pos, size=(w, h))
         texture.blit_buffer(bytes(buf_rgba), colorfmt='rgba', bufferfmt='ubyte')
         self.img_texture = texture
 
@@ -181,4 +174,5 @@ class FigureCanvasKivyAgg(FigureCanvasKivy, FigureCanvasAgg):
 ''' Standard names that backend.__init__ is expecting '''
 FigureCanvas = FigureCanvasKivyAgg
 FigureManager = FigureManagerKivy
+NavigationToolbar = NavigationToolbar2Kivy
 show = show

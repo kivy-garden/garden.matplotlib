@@ -391,7 +391,7 @@ class RendererKivy(RendererBase):
                 return idx
         return -1
 
-    def get_path_instructions(self, gc, polygons, closed=False, rgbFace=None, clippath=False):
+    def get_path_instructions(self, gc, polygons, closed=False, rgbFace=None):
         '''With a graphics context and a set of polygons it returns a list
            of InstructionGroups required to render the path.
         '''
@@ -411,14 +411,14 @@ class RendererKivy(RendererBase):
             if newclip > -1:
                 instructions_list.append((self.clip_rectangles[newclip],
                         self.get_graphics(gc, tess, points_line, rgbFace,
-                                          closed=closed, clippath=clippath)))
+                                          closed=closed)))
             else:
                 instructions_list.append((self.widget,
                         self.get_graphics(gc, tess, points_line, rgbFace,
-                                          closed=closed, clippath=clippath)))
+                                          closed=closed)))
         return instructions_list
 
-    def get_graphics(self, gc, polygons, points_line, rgbFace, closed=False, clippath=False):
+    def get_graphics(self, gc, polygons, points_line, rgbFace, closed=False):
         '''Return an instruction group which contains the necessary graphics
            instructions to draw the respective graphics.
         '''
@@ -476,7 +476,7 @@ class RendererKivy(RendererBase):
                 Rectangle(texture=texture, pos=(x, y), size=(w, h))
         else:
             polygons = clippath.to_polygons(clippath_trans)
-            list_canvas_instruction = self.get_path_instructions(gc, polygons, rgbFace=(0.0, 1.0, 0.0, 1.0), clippath=True)
+            list_canvas_instruction = self.get_path_instructions(gc, polygons, rgbFace=(1.0, 1.0, 1.0, 1.0))
             for widget, instructions in list_canvas_instruction:
                 widget.canvas.add(StencilPush())
                 widget.canvas.add(instructions)

@@ -161,6 +161,8 @@ from kivy.graphics import Rotate, Translate
 from kivy.graphics.instructions import InstructionGroup
 from kivy.graphics.tesselator import Tesselator
 from kivy.graphics.context_instructions import PopMatrix, PushMatrix
+from kivy.graphics import StencilPush, StencilPop, StencilUse,\
+                                StencilUnUse
 from kivy.logger import Logger
 from kivy.graphics import Mesh
 from kivy.resources import resource_find
@@ -389,7 +391,7 @@ class RendererKivy(RendererBase):
                 return idx
         return -1
 
-    def get_path_instructions(self, gc, polygons, closed=False, rgbFace=None):
+    def get_path_instructions(self, gc, polygons, closed=False, rgbFace=None, clippath=False):
         '''With a graphics context and a set of polygons it returns a list
            of InstructionGroups required to render the path.
         '''
@@ -409,14 +411,14 @@ class RendererKivy(RendererBase):
             if newclip > -1:
                 instructions_list.append((self.clip_rectangles[newclip],
                         self.get_graphics(gc, tess, points_line, rgbFace,
-                                          closed=closed)))
+                                          closed=closed, clippath=clippath)))
             else:
                 instructions_list.append((self.widget,
                         self.get_graphics(gc, tess, points_line, rgbFace,
-                                          closed=closed)))
+                                          closed=closed, clippath=clippath)))
         return instructions_list
 
-    def get_graphics(self, gc, polygons, points_line, rgbFace, closed=False):
+    def get_graphics(self, gc, polygons, points_line, rgbFace, closed=False, clippath=False):
         '''Return an instruction group which contains the necessary graphics
            instructions to draw the respective graphics.
         '''
@@ -451,6 +453,9 @@ class RendererKivy(RendererBase):
            A Texture is applied to the FigureCanvas. The position x, y is
            given in matplotlib coordinates.
         '''
+        # Clip path to define an area to mask.
+        clippath, clippath_trans = gc.get_clip_path()
+        # Normal coordinates calculated and image added.
         x = self.widget.x + x
         y = self.widget.y + y
         bbox = gc.get_clip_rectangle()
@@ -465,32 +470,21 @@ class RendererKivy(RendererBase):
         rows, cols, image_str = im.as_rgba_str()
         texture = Texture.create(size=(w, h))
         texture.blit_buffer(image_str, colorfmt='rgba', bufferfmt='ubyte')
-        with self.widget.canvas:
-            Color(1.0, 1.0, 1.0, 1.0)
-            Rectangle(texture=texture, pos=(x, y), size=(w, h))
-
-#     def draw_gouraud_triangle(self, gc, points, colors, transform):
-#         RendererBase.draw_gouraud_triangle(self, gc, points, colors,
-#         transform)
-#         assert len(points) == len(colors)
-#         assert points.ndim == 3
-#         assert points.shape[1] == 3
-#         assert points.shape[2] == 2
-#         assert colors.ndim == 3
-#         assert colors.shape[1] == 3
-#         assert colors.shape[2] == 4
-#         shape = points.shape
-#         points = points.reshape((shape[0] * shape[1], 2))
-#         tpoints = trans.transform(points)
-#         tpoints = tpoints.reshape(shape)
-#         name = self.list_goraud_triangles.append((tpoints, colors))
-#         ''' Implement this pseudocode with points and colors:
-#         http://www-users.mat.uni.torun.pl/~wrona/3d_tutor/tri_fillers.html '''
-#
-#     def draw_gouraud_triangles(self, gc, triangles_array, colors_array,
-#         transform):
-#         self.draw_gouraud_triangles(gc, points.reshape((1, 3, 2)),
-#                                     colors.reshape((1, 3, 4)), trans)
+        if clippath is None:
+            with self.widget.canvas:
+                Color(1.0, 1.0, 1.0, 1.0)
+                Rectangle(texture=texture, pos=(x, y), size=(w, h))
+        else:
+            polygons = clippath.to_polygons(clippath_trans)
+            list_canvas_instruction = self.get_path_instructions(gc, polygons, rgbFace=(0.0, 1.0, 0.0, 1.0), clippath=True)
+            for widget, instructions in list_canvas_instruction:
+                widget.canvas.add(StencilPush())
+                widget.canvas.add(instructions)
+                widget.canvas.add(StencilUse())
+                widget.canvas.add(Color(1.0, 1.0, 1.0, 1.0))
+                widget.canvas.add(Rectangle(texture=texture, pos=(x, y), size=(w, h)))
+                widget.canvas.add(StencilUnUse())
+                widget.canvas.add(StencilPop())
 
     def draw_text(self, gc, x, y, s, prop, angle, ismath=False, mtext=None):
         '''Render text that is displayed in the canvas. The position x, y is

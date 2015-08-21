@@ -71,11 +71,11 @@ the first example in the following section.
     In this scenario button_press_event won't be connected with the object
     being created in line 3, because will be connected to the default canvas
     set by matplotlib. If this approach is taken be sure of connecting the
-    events after instantiation. ::
+    events after instantiation like the following: ::
 
         fig, ax = plt.subplots()
-        fig.canvas.mpl_connect('button_press_event', callback_handler)
         my_mpl_kivy_widget = FigureCanvas(fig)
+        fig.canvas.mpl_connect('button_press_event', callback_handler)
 
 2. Use pyplot to write the application following matplotlib sintax as can be
 seen in the second example below. In this case a Kivy application will be
@@ -161,7 +161,9 @@ This can be seen in test_backend.py example ::
     nav1 = NavigationToolbar2Kivy(my_mpl_kivy_widget1)
     nav2 = NavigationToolbar2Kivy(my_mpl_kivy_widget2)
     bl.add_widget(nav1.actionbar)
+    bl.add_widget(my_mpl_kivy_widget1)
     bl.add_widget(nav2.actionbar)
+    bl.add_widget(my_mpl_kivy_widget2)
 
 
 Connecting Matplotlib events to Kivy Events

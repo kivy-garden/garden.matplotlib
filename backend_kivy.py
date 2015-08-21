@@ -131,7 +131,7 @@ from matplotlib.backend_bases import RendererBase, GraphicsContextBase,\
     FigureManagerBase, FigureCanvasBase, NavigationToolbar2, TimerBase
 from matplotlib.figure import Figure
 from matplotlib.transforms import Bbox, Affine2D
-from matplotlib.backend_bases import ShowBase
+from matplotlib.backend_bases import ShowBase, Event
 from matplotlib.mathtext import MathTextParser
 from matplotlib import rcParams
 from hashlib import md5
@@ -426,13 +426,14 @@ class RendererKivy(RendererBase):
         if isinstance(gc.line['dash_list'], tuple):
             gc.line['dash_list'] = list(gc.line['dash_list'])
         if rgbFace is not None:
-            instruction_group.add(Color(*rgbFace))
-            for vertices, indices in polygons.meshes:
-                instruction_group.add(Mesh(
-                    vertices=vertices,
-                    indices=indices,
-                    mode=str("triangle_fan")
-                ))
+            if len(polygons.meshes) != 0:
+                instruction_group.add(Color(*rgbFace))
+                for vertices, indices in polygons.meshes:
+                    instruction_group.add(Mesh(
+                        vertices=vertices,
+                        indices=indices,
+                        mode=str("triangle_fan")
+                    ))
         instruction_group.add(Color(*gc.get_rgb()))
         if _mpl_1_5 and closed:
             points_poly_line = points_line[:-2]
@@ -476,13 +477,15 @@ class RendererKivy(RendererBase):
                 Rectangle(texture=texture, pos=(x, y), size=(w, h))
         else:
             polygons = clippath.to_polygons(clippath_trans)
-            list_canvas_instruction = self.get_path_instructions(gc, polygons, rgbFace=(1.0, 1.0, 1.0, 1.0))
+            list_canvas_instruction = self.get_path_instructions(gc, polygons,
+                                                rgbFace=(1.0, 1.0, 1.0, 1.0))
             for widget, instructions in list_canvas_instruction:
                 widget.canvas.add(StencilPush())
                 widget.canvas.add(instructions)
                 widget.canvas.add(StencilUse())
                 widget.canvas.add(Color(1.0, 1.0, 1.0, 1.0))
-                widget.canvas.add(Rectangle(texture=texture, pos=(x, y), size=(w, h)))
+                widget.canvas.add(Rectangle(texture=texture,
+                                            pos=(x, y), size=(w, h)))
                 widget.canvas.add(StencilUnUse())
                 widget.canvas.add(StencilPop())
 
@@ -910,23 +913,19 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         if super(FigureCanvasKivy, self).on_touch_down(touch):
             return True
         if self.collide_point(*touch.pos):
-            FigureCanvasBase.motion_notify_event(self, x,
-                                y, guiEvent=None)
+            self.motion_notify_event(x, y, guiEvent=None)
 
             touch.grab(self)
             if(touch.button == "scrollup" or touch.button == "scrolldown"):
-                FigureCanvasBase.scroll_event(self, x,
-                                              y, 5, guiEvent=None)
+                self.scroll_event(x, y, 5, guiEvent=None)
             else:
-                FigureCanvasBase.button_press_event(self, x, y,
-                                                self.get_mouse_button(touch),
-                                                dblclick=False, guiEvent=None)
+                self.button_press_event(x, y, self.get_mouse_button(touch),
+                                        dblclick=False, guiEvent=None)
             if self.entered_figure:
-                FigureCanvasBase.enter_notify_event(self, guiEvent=None,
-                                                    xy=None)
+                self.enter_notify_event(guiEvent=None, xy=None)
         else:
             if not self.entered_figure:
-                FigureCanvasBase.leave_notify_event(self, guiEvent=None)
+                self.leave_notify_event(guiEvent=None)
         return False
 
     def on_touch_move(self, touch):
@@ -937,14 +936,14 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         x = newcoord[0]
         y = newcoord[1]
         inside = self.collide_point(touch.x, touch.y)
-        FigureCanvasBase.motion_notify_event(self, x, y,
-                                             guiEvent=None)
-        if inside and self.entered_figure:
-            FigureCanvasBase.enter_notify_event(self, guiEvent=None, xy=None)
-            self.entered_figure = False
-        elif not inside and not self.entered_figure:
-            FigureCanvasBase.leave_notify_event(self, guiEvent=None)
+        if inside:
+            self.motion_notify_event(x, y, guiEvent=None)
+        if not inside and not self.entered_figure:
+            self.leave_notify_event(guiEvent=None)
             self.entered_figure = True
+        elif inside and self.entered_figure:
+            self.enter_notify_event(guiEvent=None, xy=(x, y))
+            self.entered_figure = False
         return False
 
     def get_mouse_button(self, touch):
@@ -969,11 +968,9 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         y = newcoord[1]
         if touch.grab_current is self:
             if touch.button == "scrollup" or touch.button == "scrolldown":
-                FigureCanvasBase.scroll_event(self, x, y,
-                                              5, guiEvent=None)
+                self.scroll_event(x, y, 5, guiEvent=None)
             else:
-                FigureCanvasBase.button_release_event(self, x, y,
-                                                    touch.button, guiEvent=None)
+                self.button_release_event(x, y, touch.button, guiEvent=None)
             touch.ungrab(self)
         else:
             return super(FigureCanvasKivy, self).on_touch_up(touch)
@@ -982,14 +979,14 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
     def keyboard_on_key_down(self, window, keycode, text, modifiers):
         '''Kivy event to trigger matplotlib `key_press_event`.
         '''
-        FigureCanvasBase.key_press_event(self, keycode[1], guiEvent=None)
+        self.key_press_event(keycode[1], guiEvent=None)
         return super(FigureCanvasKivy, self).keyboard_on_key_down(window,
                                                     keycode, text, modifiers)
 
     def keyboard_on_key_up(self, window, keycode):
         '''Kivy event to trigger matplotlib `key_release_event`.
         '''
-        FigureCanvasBase.key_release_event(self, keycode[1], guiEvent=None)
+        self.key_release_event(keycode[1], guiEvent=None)
         return super(FigureCanvasKivy, self).keyboard_on_key_up(window, keycode)
 
     def _on_mouse_pos(self, *args):
@@ -1001,17 +998,23 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         newcoord = self.to_widget(pos[0], pos[1], relative=True)
         x = newcoord[0]
         y = newcoord[1]
-
         inside = self.collide_point(*pos)
         if inside:
-            FigureCanvasBase.motion_notify_event(self, x, y,
-                                            guiEvent=None)
+            self.motion_notify_event(x, y, guiEvent=None)
         if not inside and not self.entered_figure:
-            FigureCanvasBase.leave_notify_event(self, guiEvent=None)
+            self.leave_notify_event(guiEvent=None)
             self.entered_figure = True
         elif inside and self.entered_figure:
-            FigureCanvasBase.enter_notify_event(self, guiEvent=None, xy=None)
+            self.enter_notify_event(guiEvent=None, xy=(pos[0], pos[1]))
             self.entered_figure = False
+
+    def enter_notify_event(self, guiEvent=None, xy=None):
+        event = Event('figure_enter_event', self, guiEvent)
+        self.callbacks.process('figure_enter_event', event)
+
+    def leave_notify_event(self, guiEvent=None):
+        event = Event('figure_leave_event', self, guiEvent)
+        self.callbacks.process('figure_leave_event', event)
 
     def _on_size_changed(self, *args):
         '''Changes the size of the matplotlib figure based on the size of the
@@ -1027,9 +1030,6 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
 
     def callback(self, *largs):
         self.draw()
-
-    def close_event(self, guiEvent=None):
-        FigureCanvasBase.close_event(self, guiEvent=guiEvent)
 
     def blit(self, bbox=None):
         '''If bbox is None, blit the entire canvas to the widget. Otherwise

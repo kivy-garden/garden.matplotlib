@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
 from matplotlib.figure import Figure
 from numpy import arange, sin, pi
 from kivy.app import App
@@ -85,10 +87,6 @@ def autolabel(rects):
         ax.text(rect.get_x() + rect.get_width() / 2., 1.05 * height,
                 '%d' % int(height), ha='center', va='bottom')
 
-canvas = FigureCanvas(figure=fig)
-# canvas.blit(Bbox(np.array([[0, 0], [400, 400]], np.int32)))
-canvas2 = FigureCanvas(figure=fig2)
-
 fig.canvas.mpl_connect('button_press_event', press)
 fig.canvas.mpl_connect('button_release_event', release)
 fig.canvas.mpl_connect('key_press_event', keypress)
@@ -110,6 +108,10 @@ fig2.canvas.mpl_connect('scroll_event', scroll)
 fig2.canvas.mpl_connect('figure_enter_event', figure_enter)
 fig2.canvas.mpl_connect('figure_leave_event', figure_leave)
 fig2.canvas.mpl_connect('close_event', close)
+
+canvas = fig.canvas
+# canvas.blit(Bbox(np.array([[0, 0], [400, 400]], np.int32)))
+canvas2 = fig2.canvas
 
 
 def callback(instance):

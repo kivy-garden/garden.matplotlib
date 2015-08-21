@@ -9,16 +9,84 @@ Backend Kivy
 
 The :class:`FigureCanvasKivy` widget is used to create a matplotlib graph.
 This widget has the same properties as
-:class:`kivy.ext.mpl.backend_kivyagg.Backend_KivyAgg`. This widget instead
-of rendering a static image, uses the kivy graphics instructions
+:class:`kivy.ext.mpl.backend_kivyagg.FigureCanvasKivyAgg`. FigureCanvasKivy
+instead of rendering a static image, uses the kivy graphics instructions
 :class:`kivy.graphics.Line` and :class:`kivy.graphics.Mesh` to render on the
 canvas.
+
+Installation
+------------
+
+The matplotlib backend for kivy can be used by using the garden extension in
+kivy following this .. _link: http://kivy.org/docs/api-kivy.garden.html ::
+
+    garden install matplotlib
+
+Or if you want to include it directly on your application ::
+
+    cd myapp
+    garden install --app graph
+
+
+Initialization
+--------------
+
+A backend can be initialized in two ways. The first one is using pure pyplot
+as explained
+.. _here: http://matplotlib.org/faq/usage_faq.html#what-is-a-backend::
+
+    import matplotlib
+    matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
+
+Once this is done, any figure instantiated after will be wrapped by a
+:class:`FigureCanvasKivy` ready to use. From here there are two options to
+continue with the development.
+
+1. Use the :class:`FigureCanvasKivy` attribute defined as canvas from Figure,
+to embed your matplotlib graph in your own Kivy application as can be seen in
+the first example in the following section.
+
+.. warning::
+
+    One can create a matplotlib widget by importing FigureCanvas::
+
+        from kivy.garden.matplotlib.backend_kivyagg import FigureCanvas
+        or
+        from kivy.garden.matplotlib.backend_kivy import FigureCanvas
+
+    and then instantiate an object::
+
+        fig, ax = plt.subplots()
+        my_mpl_kivy_widget = FigureCanvas(fig)
+
+    which will certainly work but a problem will arise if events were connected
+    before the FigureCanvas is instantiated. If this approach is taken please
+    connect matplotlib events after generating the matplotlib kivy widget
+    object ::
+
+        fig, ax = plt.subplots()
+        fig.canvas.mpl_connect('button_press_event', callback_handler)
+        my_mpl_kivy_widget = FigureCanvas(fig)
+
+    In this scenario button_press_event won't be connected with the object
+    being created in line 3, because will be connected to the default canvas
+    set by matplotlib. If this approach is taken be sure of connecting the
+    events after instantiation. ::
+
+        fig, ax = plt.subplots()
+        fig.canvas.mpl_connect('button_press_event', callback_handler)
+        my_mpl_kivy_widget = FigureCanvas(fig)
+
+2. Use pyplot to write the application following matplotlib sintax as can be
+seen in the second example below. In this case a Kivy application will be
+created automatically from the matplotlib instructions and a NavigationToolbar
+will be added to the main canvas.
 
 
 Examples
 --------
 
-Example of a simple Hello world matplotlib App::
+1. Example of a simple Hello world matplotlib App::
 
     fig, ax = plt.subplots()
     ax.text(0.6, 0.5, "hello", size=50, rotation=30.,
@@ -35,7 +103,7 @@ Example of a simple Hello world matplotlib App::
                       fc=(1., 0.8, 0.8),
                       )
             )
-    canvas = FigureCanvasKivy(figure=fig)
+    canvas = fig.canvas
 
 The object canvas can be added as a widget into the kivy tree widget.
 If a change is done on the figure an update can be performed using
@@ -51,8 +119,52 @@ argument receives the `filename`.::
     # export to png
     canvas.print_png("my_plot.png")
 
+2. Example of a pyplot application using matplotlib instructions::
 
-Backend Kivy Events
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    N = 5
+    menMeans = (20, 35, 30, 35, 27)
+    menStd = (2, 3, 4, 1, 2)
+    ind = np.arange(N)  # the x locations for the groups
+    width = 0.35       # the width of the bars
+    figure, ax = plt.subplots()
+
+    rects1 = ax.bar(ind, menMeans, width, color='r', yerr=menStd)
+    womenMeans = (25, 32, 34, 20, 25)
+    womenStd = (3, 5, 2, 3, 3)
+    rects2 = ax.bar(ind + width, womenMeans, width, color='y', yerr=womenStd)
+
+    ax.set_ylabel('----------------------Scores------------------')
+    ax.set_title('Scores by group and gender')
+    ax.set_xticks(ind + width)
+    ax.set_yticklabels(('Ahh', '--G1--', 'G2', 'G3', 'G4', 'G5', 'G5',
+                        'G5', 'G5'), rotation=90)
+    ax.legend((rects1[0], rects2[0]), ('Men', 'Women'))
+    plt.draw()
+    plt.savefig("test.png")
+    plt.show()
+
+
+Naviation Toolbar
+-----------------
+
+If initialized by the first step a :class:`NavigationToolbarKivy` widget can be
+created as well by instantiating an object with a :class:`FigureCanvasKivy` as
+parameter. The actual widget is stored in its actionbar attribute.
+This can be seen in test_backend.py example ::
+
+    bl = BoxLayout(orientation="vertical")
+    my_mpl_kivy_widget1 = FigureCanvasKivy(fig1)
+    my_mpl_kivy_widget2 = FigureCanvasKivy(fig2)
+    nav1 = NavigationToolbar2Kivy(my_mpl_kivy_widget1)
+    nav2 = NavigationToolbar2Kivy(my_mpl_kivy_widget2)
+    bl.add_widget(nav1.actionbar)
+    bl.add_widget(nav2.actionbar)
+
+
+Connecting Matplotlib events to Kivy Events
 -----------------------
 
 All ten matplotlib events are available: `button_press_event` which is raised

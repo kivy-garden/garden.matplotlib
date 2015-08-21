@@ -13,7 +13,8 @@ specified using a :meth:`blit`.
 When you are creating a FigureCanvasKivyAgg widget, you must at least
 initialize it with a matplotlib figure object. This class uses agg to get a
 static image of the plot and then the image is render using a
-:class:`~kivy.graphics.texture.Texture`.
+:class:`~kivy.graphics.texture.Texture`. See backend_kivy documentation for
+more information since both backends can be used in the exact same way.
 
 
 Examples

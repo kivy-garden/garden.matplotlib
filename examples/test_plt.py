@@ -78,7 +78,7 @@ rects2 = ax.bar(ind + width, womenMeans, width, color='y', yerr=womenStd)
 ax.set_ylabel('---------------------------Scores----------------------------')
 ax.set_title('Scores by group and gender')
 ax.set_xticks(ind + width)
-ax.set_yticklabels(('Ahh', '-----------G1------', 'G2', 'G3', 'G4', 'G5', 'G5',
+ax.set_yticklabels(('Ahh', '--G1--', 'G2', 'G3', 'G4', 'G5', 'G5',
                     'G5', 'G5'), rotation=90)
 ax.legend((rects1[0], rects2[0]), ('Men', 'Women'))
 

@@ -79,17 +79,20 @@ from matplotlib.backend_bases import RendererBase, GraphicsContextBase,\
 from matplotlib.figure import Figure
 from matplotlib.transforms import Bbox
 from matplotlib.backends.backend_agg import FigureCanvasAgg
-from matplotlib.backend_bases import register_backend
+from matplotlib.backend_bases import register_backend, ShowBase
 
 try:
     import kivy
 except ImportError:
     raise ImportError("this backend requires Kivy to be installed.")
 
+from kivy.app import App
 from kivy.graphics.texture import Texture
 from kivy.graphics import Rectangle
 from kivy.uix.widget import Widget
+from kivy.properties import ObjectProperty
 from kivy.base import EventLoop
+from kivy.uix.floatlayout import FloatLayout
 from kivy.core.image import Image
 from kivy.garden.matplotlib.backend_kivy import FigureCanvasKivy,\
                             FigureManagerKivy, show, new_figure_manager,\
@@ -99,6 +102,19 @@ register_backend('png', 'backend_kivyagg', 'PNG File Format')
 
 toolbar = None
 my_canvas = None
+
+
+def new_figure_manager(num, *args, **kwargs):
+    '''Create a new figure manager instance for the figure given.
+    '''
+    # if a main-level app must be created, this (and
+    # new_figure_manager_given_figure) is the usual place to
+    # do it -- see backend_wx, backend_wxagg and backend_tkagg for
+    # examples. Not all GUIs require explicit instantiation of a
+    # main-level app (egg backend_gtk, backend_gtkagg) for pylab
+    FigureClass = kwargs.pop('FigureClass', Figure)
+    thisFig = FigureClass(*args, **kwargs)
+    return new_figure_manager_given_figure(num, thisFig)
 
 
 def new_figure_manager_given_figure(num, figure):
@@ -112,6 +128,40 @@ def new_figure_manager_given_figure(num, figure):
     toolbar = manager.toolbar.actionbar if manager.toolbar else None
     my_canvas = canvas
     return manager
+
+
+class MPLKivyApp(App):
+    '''Creates the App initializing a FloatLayout with a figure and toolbar
+       widget.
+    '''
+    figure = ObjectProperty(None)
+    toolbar = ObjectProperty(None)
+
+    def build(self):
+        EventLoop.ensure_window()
+        layout = FloatLayout()
+        if self.figure:
+            self.figure.size_hint_y = 0.9
+            layout.add_widget(self.figure)
+        if self.toolbar:
+            self.toolbar.size_hint_y = 0.1
+            layout.add_widget(self.toolbar)
+        return layout
+
+
+class Show(ShowBase):
+    '''mainloop needs to be overwritten to define the show() behavior for kivy
+       framework.
+    '''
+    def mainloop(self):
+        global my_canvas
+        global toolbar
+        app = App.get_running_app()
+        if app is None:
+            app = MPLKivyApp(figure=my_canvas, toolbar=toolbar)
+            app.run()
+
+show = Show()
 
 
 class FigureCanvasKivyAgg(FigureCanvasKivy, FigureCanvasAgg):
@@ -166,10 +216,10 @@ class FigureCanvasKivyAgg(FigureCanvasKivy, FigureCanvasAgg):
             texture.blit_buffer(bytes(self.get_renderer().buffer_rgba()),
                                 colorfmt='rgba', bufferfmt='ubyte')
             texture.flip_vertical()
-            img = Image(texture)
+            self.img = Image(texture)
         else:
-            img = Image(self.img_texture)
-        img.save(filename)
+            self.img = Image(self.img_texture)
+        self.img.save(filename)
 
 ''' Standard names that backend.__init__ is expecting '''
 FigureCanvas = FigureCanvasKivyAgg

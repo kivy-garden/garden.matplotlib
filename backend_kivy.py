@@ -132,6 +132,7 @@ from matplotlib.backend_bases import RendererBase, GraphicsContextBase,\
 from matplotlib.figure import Figure
 from matplotlib.transforms import Bbox, Affine2D
 from matplotlib.backend_bases import ShowBase, Event
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.mathtext import MathTextParser
 from matplotlib import rcParams
 from hashlib import md5
@@ -156,6 +157,7 @@ from kivy.uix.actionbar import ActionBar, ActionView, \
                                 ActionPrevious, ActionOverflow, ActionSeparator
 from kivy.base import EventLoop
 from kivy.core.text import Label as CoreLabel
+from kivy.core.image import Image
 from kivy.graphics import Color, Line
 from kivy.graphics import Rotate, Translate
 from kivy.graphics.instructions import InstructionGroup
@@ -174,7 +176,6 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.popup import Popup
 from kivy.properties import ObjectProperty
-from kivy.clock import Clock
 from kivy.uix.textinput import TextInput
 from kivy.lang import Builder
 from kivy.logger import Logger
@@ -1041,16 +1042,21 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
     filetypes['png'] = 'Portable Network Graphics'
 
     def print_png(self, filename, *args, **kwargs):
-        '''Call the widget function to make a png of the widget. It does a
-           one second delay to allow the widget to be completed.
+        '''Call the widget function to make a png of the widget.
         '''
-        Clock.schedule_once(partial(self._print_image, filename), 1)
+        fig = FigureCanvasAgg(self.figure)
+        FigureCanvasAgg.draw(fig)
+
+        l, b, w, h = self.figure.bbox.bounds
+        texture = Texture.create(size=(w, h))
+        texture.blit_buffer(bytes(fig.get_renderer().buffer_rgba()),
+                                colorfmt='rgba', bufferfmt='ubyte')
+        texture.flip_vertical()
+        img = Image(texture)
+        img.save(filename)
 
     def get_default_filetype(self):
         return 'png'
-
-    def _print_image(self, filename, *largs):
-        self.export_to_png(filename)
 
 
 class FigureManagerKivy(FigureManagerBase):
@@ -1081,11 +1087,6 @@ class FigureManagerKivy(FigureManagerBase):
         else:
             toolbar = None
         return toolbar
-
-    def destroy(self):
-        app = App.get_running_app()
-        if app is not None:
-            app.stop()
 
 '''Now just provide the standard names that backend.__init__ is expecting
 '''

@@ -1004,6 +1004,7 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
     def __init__(self, figure, **kwargs):
         Window.bind(mouse_pos=self._on_mouse_pos)
         self.bind(size=self._on_size_changed)
+        self.bind(pos=self._on_pos_changed)
         self.entered_figure = True
         self.figure = figure
         super(FigureCanvasKivy, self).__init__(figure=self.figure, **kwargs)
@@ -1143,7 +1144,7 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         self.figure.set_size_inches(winch, hinch)
         self.draw()
 
-    def callback(self, *largs):
+    def _on_pos_changed(self, *args):
         self.draw()
 
     def blit(self, bbox=None):

@@ -304,12 +304,7 @@ import uuid
 from functools import partial
 from math import cos, sin, pi
 
-try:
-    kivy.require('1.9.0')  # I would need to check which release of
-    # Kivy would be the best suitable.
-except AttributeError:
-    raise ImportError(
-        "kivy version too old -- it must have require_version")
+kivy.require('1.9.1')
 
 toolbar = None
 my_canvas = None

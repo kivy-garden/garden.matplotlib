@@ -1136,21 +1136,21 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         '''
         pos = args[1]
 
-        cursors = self.toolbar.cursors
-        curr_cursor = self.toolbar.curr_cursor
-
-        if curr_cursor != 1 and self.cursor_instruction is None:
-            with self.canvas.after:
-                img = Image(cursors[curr_cursor])
-                Color(1, 1, 1, 1, mode='rgba')
-                size = (
-                    img.texture.size[0],
-                    img.texture.size[1]
-                )
-                self.cursor_instruction = Rectangle(texture=img.texture,
-                                            size=size)
-        if self.cursor_instruction is not None:
-            self.cursor_instruction.pos = pos[0], pos[1]
+#         cursors = self.toolbar.cursors
+#         curr_cursor = self.toolbar.curr_cursor
+# 
+#         if curr_cursor != 1 and self.cursor_instruction is None:
+#             with self.canvas.after:
+#                 img = Image(cursors[curr_cursor])
+#                 Color(1, 1, 1, 1, mode='rgba')
+#                 size = (
+#                     img.texture.size[0],
+#                     img.texture.size[1]
+#                 )
+#                 self.cursor_instruction = Rectangle(texture=img.texture,
+#                                             size=size)
+#         if self.cursor_instruction is not None:
+#             self.cursor_instruction.pos = pos[0], pos[1]
 
         newcoord = self.to_widget(pos[0], pos[1], relative=True)
         x = newcoord[0]

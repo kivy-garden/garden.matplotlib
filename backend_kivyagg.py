@@ -179,6 +179,7 @@ class FigureCanvasKivyAgg(FigureCanvasKivy, FigureCanvasAgg):
         self.img = None
         self.img_texture = None
         self.blit()
+        self.rect = None
 
     def draw(self):
         '''
@@ -201,12 +202,16 @@ class FigureCanvasKivyAgg(FigureCanvasKivy, FigureCanvasAgg):
         texture = Texture.create(size=(w, h))
         texture.flip_vertical()
         with self.canvas:
-            Rectangle(texture=texture, pos=self.pos, size=(w, h))
+            self.rect = Rectangle(texture=texture, pos=self.pos, size=(w, h))
         texture.blit_buffer(bytes(buf_rgba), colorfmt='rgba', bufferfmt='ubyte')
         self.img_texture = texture
 
     filetypes = FigureCanvasKivy.filetypes.copy()
     filetypes['png'] = 'Portable Network Graphics'
+
+    def _on_pos_changed(self, *args):
+        if self.rect is not None:
+            self.rect.pos = self.pos
 
     def _print_image(self, filename, *args, **kwargs):
         '''Write out format png. The image is saved with the filename given.

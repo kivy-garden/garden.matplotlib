@@ -999,6 +999,7 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
     def __init__(self, figure, **kwargs):
         Window.bind(mouse_pos=self._on_mouse_pos)
         self.bind(size=self._on_size_changed)
+        self.bind(pos=self._on_pos_changed)
         self.entered_figure = True
         self.figure = figure
         super(FigureCanvasKivy, self).__init__(figure=self.figure, **kwargs)
@@ -1125,6 +1126,9 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
     def leave_notify_event(self, guiEvent=None):
         event = Event('figure_leave_event', self, guiEvent)
         self.callbacks.process('figure_leave_event', event)
+
+    def _on_pos_changed(self, *args):
+        self.draw()
 
     def _on_size_changed(self, *args):
         '''Changes the size of the matplotlib figure based on the size of the

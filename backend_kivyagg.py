@@ -176,8 +176,8 @@ class FigureCanvasKivyAgg(FigureCanvasKivy, FigureCanvasAgg):
         self.figure = figure
         self.bind(size=self._on_size_changed)
         super(FigureCanvasKivyAgg, self).__init__(figure=self.figure, **kwargs)
-        self.img = None
         self.img_texture = None
+        self.img_rect = None
         self.blit()
 
     def draw(self):
@@ -201,26 +201,32 @@ class FigureCanvasKivyAgg(FigureCanvasKivy, FigureCanvasAgg):
         texture = Texture.create(size=(w, h))
         texture.flip_vertical()
         with self.canvas:
-            Rectangle(texture=texture, pos=self.pos, size=(w, h))
+            self.img_rect = Rectangle(texture=texture, pos=self.pos,
+                                      size=(w, h))
         texture.blit_buffer(bytes(buf_rgba), colorfmt='rgba', bufferfmt='ubyte')
         self.img_texture = texture
 
     filetypes = FigureCanvasKivy.filetypes.copy()
     filetypes['png'] = 'Portable Network Graphics'
 
+    def _on_pos_changed(self, *args):
+        if self.img_rect is not None:
+            self.img_rect.pos = self.pos
+
     def _print_image(self, filename, *args, **kwargs):
         '''Write out format png. The image is saved with the filename given.
         '''
         l, b, w, h = self.figure.bbox.bounds
+        img = None
         if self.img_texture is None:
             texture = Texture.create(size=(w, h))
             texture.blit_buffer(bytes(self.get_renderer().buffer_rgba()),
                                 colorfmt='rgba', bufferfmt='ubyte')
             texture.flip_vertical()
-            self.img = Image(texture)
+            img = Image(texture)
         else:
-            self.img = Image(self.img_texture)
-        self.img.save(filename)
+            img = Image(self.img_texture)
+        img.save(filename)
 
 ''' Standard names that backend.__init__ is expecting '''
 FigureCanvas = FigureCanvasKivyAgg

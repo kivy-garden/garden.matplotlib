@@ -231,6 +231,17 @@ is released, `motion_notify_event` which is raised when the mouse is on motion,
     fig.canvas.mpl_connect('figure_leave_event', figure_leave)
     fig.canvas.mpl_connect('close_event', close)
 
+.. warning::
+
+    There are two scenarios in which a close event can be fired. The first when
+    an application with figure(s) is being closed, the second when a figure is
+    being removed from the application tree. We decided to leave it to the
+    developer will by setting a property called :attr:`closed` which is a
+    :class:`~kivy.properties.BooleanProperty`.::
+    
+    fig, ax = plt.subplots()
+    fig.canvas.closed = True # This will raise a matplotlib close event.
+
 '''
 
 from __future__ import (absolute_import, division, print_function,
@@ -289,7 +300,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.popup import Popup
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, BooleanProperty
 from kivy.uix.textinput import TextInput
 from kivy.lang import Builder
 from kivy.logger import Logger
@@ -992,8 +1003,16 @@ class GraphicsContextKivy(GraphicsContextBase, object):
 
 class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
     '''FigureCanvasKivy class. See module documentation for more information.
+    '''
 
-    .. versionadded:: 1.9.1
+    closed = BooleanProperty(False)
+    '''Indicates whether this widget has been removed from the parent or not.
+
+    .. warning::
+            Internal usage only.
+
+    :attr:`closed` is a :class:`~kivy.properties.BooleanProperty` and
+    defaults to False.
     '''
 
     def __init__(self, figure, **kwargs):
@@ -1010,6 +1029,10 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         self.canvas.clear()
         self._renderer = RendererKivy(self)
         self.figure.draw(self._renderer)
+
+    def on_closed(self, instance, value):
+        if value:
+            return super(FigureCanvasKivy, self).close_event()
 
     def on_touch_down(self, touch):
         '''Kivy Event to trigger the following matplotlib events:

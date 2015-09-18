@@ -1026,9 +1026,8 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
             self.motion_notify_event(x, y, guiEvent=None)
 
             touch.grab(self)
-            if(touch.button == "scrollup" or touch.button == "scrolldown"):
-                self.scroll_event(x, y, 5, guiEvent=None)
-            else:
+            if(touch.button == "left" or touch.button == "middle" or
+               touch.button == "right"):
                 self.button_press_event(x, y, self.get_mouse_button(touch),
                                         dblclick=False, guiEvent=None)
             if self.entered_figure:
@@ -1072,13 +1071,17 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
     def on_touch_up(self, touch):
         '''Kivy Event to trigger the following matplotlib events:
            `scroll_event` and `button_release_event`.
+           For scroll event a value of 20 pixels is set based on the
+           default value set on scrollview.
         '''
         newcoord = self.to_widget(touch.x, touch.y, relative=True)
         x = newcoord[0]
         y = newcoord[1]
         if touch.grab_current is self:
-            if touch.button == "scrollup" or touch.button == "scrolldown":
-                self.scroll_event(x, y, 5, guiEvent=None)
+            if touch.button == "scrollup":
+                self.scroll_event(x, y, 20, guiEvent=None)
+            elif touch.button == "scrolldown":
+                self.scroll_event(x, y, -20, guiEvent=None)
             else:
                 self.button_release_event(x, y, touch.button, guiEvent=None)
             touch.ungrab(self)

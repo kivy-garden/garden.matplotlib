@@ -1140,6 +1140,7 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         winch = w / dpival
         hinch = h / dpival
         self.figure.set_size_inches(winch, hinch)
+        self.resize_event()
         self.draw()
 
     def callback(self, *largs):

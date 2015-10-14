@@ -89,7 +89,7 @@ except ImportError:
 
 from kivy.app import App
 from kivy.graphics.texture import Texture
-from kivy.graphics import Rectangle
+from kivy.graphics import Rectangle, Color
 from kivy.uix.widget import Widget
 from kivy.properties import ObjectProperty
 from kivy.base import EventLoop
@@ -201,6 +201,7 @@ class FigureCanvasKivyAgg(FigureCanvasKivy, FigureCanvasAgg):
         texture = Texture.create(size=(w, h))
         texture.flip_vertical()
         with self.canvas:
+            Color(1.0, 1.0, 1.0, 1.0)
             self.img_rect = Rectangle(texture=texture, pos=self.pos,
                                       size=(w, h))
         texture.blit_buffer(bytes(buf_rgba), colorfmt='rgba', bufferfmt='ubyte')

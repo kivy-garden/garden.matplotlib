@@ -25,7 +25,7 @@ kivy following this .. _link: http://kivy.org/docs/api-kivy.garden.html ::
 Or if you want to include it directly on your application ::
 
     cd myapp
-    garden install --app graph
+    garden install --app matplotlib
 
 
 Initialization
@@ -147,7 +147,7 @@ argument receives the `filename`.::
     plt.show()
 
 
-Naviation Toolbar
+Navigation Toolbar
 -----------------
 
 If initialized by the first step a :class:`NavigationToolbarKivy` widget can be
@@ -179,7 +179,7 @@ is released, `motion_notify_event` which is raised when the mouse is on motion,
 `figure_enter_event` which is raised when mouse enters a new figure,
 `figure_leave_event` which is raised when mouse leaves a figure,
 `close_event` which is raised when the window is closed,
-`draw_event` which is rained on canvas draw,
+`draw_event` which is raised on canvas draw,
 `pick_event` which is raised when an object is selected,
 `idle_event` (deprecated),
 `axes_enter_event` which is fired when mouse enters axes,

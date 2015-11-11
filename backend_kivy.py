@@ -169,7 +169,7 @@ This can be seen in test_backend.py example ::
 Connecting Matplotlib events to Kivy Events
 -----------------------
 
-All ten matplotlib events are available: `button_press_event` which is raised
+All matplotlib events are available: `button_press_event` which is raised
 on a mouse button clicked or on touch down, `button_release_event` which is
 raised when a click button is released or on touch up, `key_press_event` which
 is raised when a key is pressed, `key_release_event` which is raised when a key
@@ -178,7 +178,12 @@ is released, `motion_notify_event` which is raised when the mouse is on motion,
 `scroll_event` which is raised when the mouse scroll wheel is rolled,
 `figure_enter_event` which is raised when mouse enters a new figure,
 `figure_leave_event` which is raised when mouse leaves a figure,
-`close_event` which is raised when the window is closed.::
+`close_event` which is raised when the window is closed,
+`draw_event` which is rained on canvas draw,
+`pick_event` which is raised when an object is selected,
+`idle_event` (deprecated),
+`axes_enter_event` which is fired when mouse enters axes,
+`axes_leave_event` which is fired when mouse leaves axes.::
 
     def press(event):
         print('press released from test', event.x, event.y, event.button)

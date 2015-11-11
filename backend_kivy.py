@@ -611,7 +611,6 @@ class RendererKivy(RendererBase):
             # Get anchor coordinates.
             transform = mtext.get_transform()
             ax, ay = transform.transform_point(mtext.get_position())
-            ay = self.widget.height - ay
 
             angle_rad = angle * np.pi / 180.
             dir_vert = np.array([np.sin(angle_rad), np.cos(angle_rad)])
@@ -627,15 +626,11 @@ class RendererKivy(RendererBase):
                 x -= w / 2
             elif ha == "right":
                 x -= w
-            elif ha == "left":
-                x += w
             va = mtext.get_va()
             if va == "top":
                 y -= h
             elif va == "center":
                 y -= h / 2
-            elif va == "bottom":
-                y += h
 
         x += self.widget.x
         y += self.widget.y

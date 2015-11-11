@@ -169,7 +169,7 @@ This can be seen in test_backend.py example ::
 Connecting Matplotlib events to Kivy Events
 -----------------------
 
-All ten matplotlib events are available: `button_press_event` which is raised
+All matplotlib events are available: `button_press_event` which is raised
 on a mouse button clicked or on touch down, `button_release_event` which is
 raised when a click button is released or on touch up, `key_press_event` which
 is raised when a key is pressed, `key_release_event` which is raised when a key
@@ -178,7 +178,12 @@ is released, `motion_notify_event` which is raised when the mouse is on motion,
 `scroll_event` which is raised when the mouse scroll wheel is rolled,
 `figure_enter_event` which is raised when mouse enters a new figure,
 `figure_leave_event` which is raised when mouse leaves a figure,
-`close_event` which is raised when the window is closed.::
+`close_event` which is raised when the window is closed,
+`draw_event` which is rained on canvas draw,
+`pick_event` which is raised when an object is selected,
+`idle_event` (deprecated),
+`axes_enter_event` which is fired when mouse enters axes,
+`axes_leave_event` which is fired when mouse leaves axes.::
 
     def press(event):
         print('press released from test', event.x, event.y, event.button)
@@ -293,6 +298,7 @@ from kivy.properties import ObjectProperty
 from kivy.uix.textinput import TextInput
 from kivy.lang import Builder
 from kivy.logger import Logger
+from kivy.clock import Clock
 from distutils.version import LooseVersion
 
 _mpl_1_5 = LooseVersion(matplotlib.__version__) >= LooseVersion('1.5.0')
@@ -611,7 +617,6 @@ class RendererKivy(RendererBase):
             # Get anchor coordinates.
             transform = mtext.get_transform()
             ax, ay = transform.transform_point(mtext.get_position())
-            ay = self.widget.height - ay
 
             angle_rad = angle * np.pi / 180.
             dir_vert = np.array([np.sin(angle_rad), np.cos(angle_rad)])
@@ -627,15 +632,11 @@ class RendererKivy(RendererBase):
                 x -= w / 2
             elif ha == "right":
                 x -= w
-            elif ha == "left":
-                x += w
             va = mtext.get_va()
             if va == "top":
                 y -= h
             elif va == "center":
                 y -= h / 2
-            elif va == "bottom":
-                y += h
 
         x += self.widget.x
         y += self.widget.y
@@ -990,6 +991,39 @@ class GraphicsContextKivy(GraphicsContextBase, object):
         return attrib
 
 
+class TimerKivy(TimerBase):
+    '''
+    Subclass of :class:`backend_bases.TimerBase` that uses Kivy for timer events.
+    Attributes:
+    * interval: The time between timer events in milliseconds. Default
+        is 1000 ms.
+    * single_shot: Boolean flag indicating whether this timer should
+        operate as single shot (run once and then stop). Defaults to False.
+    * callbacks: Stores list of (func, args) tuples that will be called
+        upon timer events. This list can be manipulated directly, or the
+        functions add_callback and remove_callback can be used.
+    '''
+    def _timer_start(self):
+        # Need to stop it, otherwise we potentially leak a timer id that will
+        # never be stopped.
+        self._timer_stop()
+        self._timer = Clock.schedule_interval(self._on_timer, self._interval/1000)
+
+    def _timer_stop(self):
+        if self._timer is not None:
+            Clock.unschedule(self._timer)
+            self._timer = None
+
+    def _timer_set_interval(self):
+        # Only stop and restart it if the timer has already been started
+        if self._timer is not None:
+            self._timer_stop()
+            self._timer_start()
+
+    def _on_timer(self, dt):
+        TimerBase._on_timer(self)
+
+
 class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
     '''FigureCanvasKivy class. See module documentation for more information.
 
@@ -1171,6 +1205,20 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
 
     def get_default_filetype(self):
         return 'png'
+
+    def new_timer(self, *args, **kwargs):
+        """
+        Creates a new backend-specific subclass of :class:`backend_bases.Timer`.
+        This is useful for getting periodic events through the backend's native
+        event loop. Implemented only for backends with GUIs.
+        optional arguments:
+        *interval*
+          Timer interval in milliseconds
+        *callbacks*
+          Sequence of (func, args, kwargs) where func(*args, **kwargs) will
+          be executed by the timer every *interval*.
+        """
+        return TimerKivy(*args, **kwargs)
 
 
 class FigureManagerKivy(FigureManagerBase):

@@ -2,8 +2,6 @@
 Backend Kivy
 =====
 
-.. versionadded:: 1.9.1
-
 .. image:: images/backend_kivy_example.jpg
     :align: right
 
@@ -997,8 +995,6 @@ class GraphicsContextKivy(GraphicsContextBase, object):
 
 class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
     '''FigureCanvasKivy class. See module documentation for more information.
-
-    .. versionadded:: 1.9.1
     '''
 
     def __init__(self, figure, **kwargs):

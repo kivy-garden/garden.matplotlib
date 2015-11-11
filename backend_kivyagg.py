@@ -2,8 +2,6 @@
 Backend KivyAgg
 =====
 
-.. versionadded:: 1.9.1
-
 .. image:: images/backend_agg_example.jpg
     :align: right
 
@@ -168,8 +166,6 @@ show = Show()
 class FigureCanvasKivyAgg(FigureCanvasKivy, FigureCanvasAgg):
     '''FigureCanvasKivyAgg class. See module documentation for more
     information.
-
-    .. versionadded:: 1.9.1
     '''
 
     def __init__(self, figure, **kwargs):

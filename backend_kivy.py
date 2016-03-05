@@ -1064,7 +1064,7 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
             self.motion_notify_event(x, y, guiEvent=None)
 
             touch.grab(self)
-            if(touch.button == "scrollup" or touch.button == "scrolldown"):
+            if 'button' in touch.profile and touch.button in ("scrollup", "scrolldown",):
                 self.scroll_event(x, y, 5, guiEvent=None)
             else:
                 self.button_press_event(x, y, self.get_mouse_button(touch),
@@ -1099,12 +1099,13 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
            into matplotlib int values: 1 for left, 2 for middle and 3 for
            right.
         '''
-        if touch.button == "left":
-            return 1
-        elif touch.button == "middle":
-            return 2
-        elif touch.button == "right":
-            return 3
+        if 'button' in touch.profile:
+            if touch.button == "left":
+                return 1
+            elif touch.button == "middle":
+                return 2
+            elif touch.button == "right":
+                return 3
         return -1
 
     def on_touch_up(self, touch):
@@ -1115,7 +1116,7 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         x = newcoord[0]
         y = newcoord[1]
         if touch.grab_current is self:
-            if touch.button == "scrollup" or touch.button == "scrolldown":
+            if 'button' in touch.profile and touch.button in ("scrollup", "scrolldown",):
                 self.scroll_event(x, y, 5, guiEvent=None)
             else:
                 self.button_release_event(x, y, touch.button, guiEvent=None)

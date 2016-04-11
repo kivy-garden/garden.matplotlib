@@ -1244,7 +1244,7 @@ class FigureManagerKivy(FigureManagerBase):
         EventLoop.window.title = title
 
     def resize(self, w, h):
-        Window.size(w, h)
+        pass
 
     def _get_toolbar(self):
         if rcParams['toolbar'] == 'toolbar2':

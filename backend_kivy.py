@@ -1118,7 +1118,7 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
             if touch.button == "scrollup" or touch.button == "scrolldown":
                 self.scroll_event(x, y, 5, guiEvent=None)
             else:
-                self.button_release_event(x, y, touch.button, guiEvent=None)
+                self.button_release_event(x, y, self.get_mouse_button(touch.button), guiEvent=None)
             touch.ungrab(self)
         else:
             return super(FigureCanvasKivy, self).on_touch_up(touch)

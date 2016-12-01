@@ -1064,8 +1064,10 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
             self.motion_notify_event(x, y, guiEvent=None)
 
             touch.grab(self)
-            if(touch.button == "scrollup" or touch.button == "scrolldown"):
+            if(touch.button == "scrollup"):
                 self.scroll_event(x, y, 5, guiEvent=None)
+            elif(touch.button == "scrolldown"):
+                self.scroll_event(x, y, -5, guiEvent=None)
             else:
                 self.button_press_event(x, y, self.get_mouse_button(touch),
                                         dblclick=False, guiEvent=None)
@@ -1115,8 +1117,10 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         x = newcoord[0]
         y = newcoord[1]
         if touch.grab_current is self:
-            if touch.button == "scrollup" or touch.button == "scrolldown":
+            if touch.button == "scrollup":
                 self.scroll_event(x, y, 5, guiEvent=None)
+            elif touch.button == "scrolldown":
+                self.scroll_event(x, y, -5, guiEvent=None)
             else:
                 self.button_release_event(x, y, self.get_mouse_button(touch), guiEvent=None)
             touch.ungrab(self)

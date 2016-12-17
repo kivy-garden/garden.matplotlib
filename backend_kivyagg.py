@@ -196,7 +196,10 @@ class FigureCanvasKivyAgg(FigureCanvasKivy, FigureCanvasAgg):
             buf_rgba = reg.to_string()
         texture = Texture.create(size=(w, h))
         texture.flip_vertical()
+        color = self.figure.get_facecolor()
         with self.canvas:
+            Color(*color)
+            Rectangle(pos=self.pos, size=(w, h))
             Color(1.0, 1.0, 1.0, 1.0)
             self.img_rect = Rectangle(texture=texture, pos=self.pos,
                                       size=(w, h))

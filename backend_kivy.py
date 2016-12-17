@@ -299,7 +299,8 @@ from kivy.logger import Logger
 from kivy.clock import Clock
 from distutils.version import LooseVersion
 
-_mpl_1_5 = LooseVersion(matplotlib.__version__) >= LooseVersion('1.5.0')
+_mpl_ge_1_5 = LooseVersion(matplotlib.__version__) >= LooseVersion('1.5.0')
+_mpl_ge_2_0 = LooseVersion(matplotlib.__version__) >= LooseVersion('2.0.0rc1')
 
 import numpy as np
 import io
@@ -477,7 +478,7 @@ class RendererKivy(RendererBase):
         for i, (path, transform) in enumerate(self._iter_collection_raw_paths(
             master_transform, paths, all_transforms)):
             transform = Affine2D(transform.get_matrix()).scale(1.0, -1.0)
-            polygons = path.to_polygons(transform)
+            polygons = path.to_polygons(transform, closed_only=False)
             path_codes.append(polygons)
         # Apply the styles and rgbFace to each one of the raw paths from
         # the list. Additionally a transformation is being applied to
@@ -549,7 +550,7 @@ class RendererKivy(RendererBase):
                         mode=str("triangle_fan")
                     ))
         instruction_group.add(Color(*gc.get_rgb()))
-        if _mpl_1_5 and closed:
+        if _mpl_ge_1_5 and not _mpl_ge_2_0 and closed:
             points_poly_line = points_line[:-2]
         else:
             points_poly_line = points_line
@@ -590,7 +591,7 @@ class RendererKivy(RendererBase):
                 Color(1.0, 1.0, 1.0, 1.0)
                 Rectangle(texture=texture, pos=(x, y), size=(w, h))
         else:
-            polygons = clippath.to_polygons(clippath_trans)
+            polygons = clippath.to_polygons(clippath_trans, closed_only=False)
             list_canvas_instruction = self.get_path_instructions(gc, polygons,
                                                 rgbFace=(1.0, 1.0, 1.0, 1.0))
             for widget, instructions in list_canvas_instruction:
@@ -650,11 +651,12 @@ class RendererKivy(RendererBase):
             self.draw_mathtext(gc, x, y, s, prop, angle)
         else:
             font = resource_find(prop.get_name() + ".ttf")
+            color = gc.get_rgb()
             if font is None:
-                plot_text = CoreLabel(font_size=prop.get_size_in_points())
+                plot_text = CoreLabel(font_size=prop.get_size_in_points(), color=color)
             else:
                 plot_text = CoreLabel(font_size=prop.get_size_in_points(),
-                                font_name=prop.get_name())
+                                font_name=prop.get_name(), color=color)
             plot_text.text = six.text_type("{}".format(s))
             if prop.get_style() == 'italic':
                 plot_text.italic = True
@@ -680,7 +682,7 @@ class RendererKivy(RendererBase):
         w = ftimage.get_width()
         h = ftimage.get_height()
         texture = Texture.create(size=(w, h))
-        if _mpl_1_5:
+        if _mpl_ge_1_5:
             texture.blit_buffer(ftimage.as_rgba_str()[0][0], colorfmt='rgba',
                                 bufferfmt='ubyte')
         else:
@@ -699,7 +701,7 @@ class RendererKivy(RendererBase):
            aesthetics is defined by the `GraphicsContextKivy` gc.
         '''
         polygons = path.to_polygons(transform, self.widget.width,
-                                    self.widget.height)
+                                    self.widget.height, closed_only=False)
         list_canvas_instruction = self.get_path_instructions(gc, polygons,
                                     closed=True, rgbFace=rgbFace)
         for widget, instructions in list_canvas_instruction:
@@ -726,7 +728,7 @@ class RendererKivy(RendererBase):
         list_instructions = self._markers.get(dictkey)
         # creating a list of instructions for the specific marker.
         if list_instructions is None:
-            polygons = marker_path.to_polygons(marker_trans)
+            polygons = marker_path.to_polygons(marker_trans, closed_only=False)
             self._markers[dictkey] = self.get_path_instructions(gc,
                                         polygons, rgbFace=rgbFace)
         # Traversing all the positions where a marker should be rendered
@@ -748,7 +750,7 @@ class RendererKivy(RendererBase):
             clip = (0.0, 0.0, self.width, self.height)
         else:
             clip = None
-        if _mpl_1_5:
+        if _mpl_ge_1_5:
             return _path.convert_to_string(
                 path, transform, clip, simplify, sketch, 6,
                 [b'M', b'L', b'Q', b'C', b'z'], False).decode('ascii')
@@ -992,7 +994,7 @@ class GraphicsContextKivy(GraphicsContextBase, object):
             if self.get_joinstyle() != 'round':
                 attrib['line-linejoin'] = self.get_joinstyle()
             if self.get_capstyle() != 'butt':
-                attrib['line-linecap'] = _capstyle_d[self.get_capstyle()]
+                attrib['line-linecap'] = _capd[self.get_capstyle()]
         return attrib
 
 
@@ -1244,7 +1246,8 @@ class FigureManagerKivy(FigureManagerBase):
         EventLoop.window.title = title
 
     def resize(self, w, h):
-        Window.size(w, h)
+        if (w > 0) and (h > 0):
+            EventLoop.window.size = (w, h)
 
     def _get_toolbar(self):
         if rcParams['toolbar'] == 'toolbar2':

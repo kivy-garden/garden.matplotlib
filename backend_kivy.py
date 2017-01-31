@@ -478,7 +478,10 @@ class RendererKivy(RendererBase):
         for i, (path, transform) in enumerate(self._iter_collection_raw_paths(
             master_transform, paths, all_transforms)):
             transform = Affine2D(transform.get_matrix()).scale(1.0, -1.0)
-            polygons = path.to_polygons(transform, closed_only=False)
+            if _mpl_ge_2_0:
+                polygons = path.to_polygons(transform, closed_only=False)
+            else:
+                polygons = path.to_polygons(transform)
             path_codes.append(polygons)
         # Apply the styles and rgbFace to each one of the raw paths from
         # the list. Additionally a transformation is being applied to
@@ -591,7 +594,10 @@ class RendererKivy(RendererBase):
                 Color(1.0, 1.0, 1.0, 1.0)
                 Rectangle(texture=texture, pos=(x, y), size=(w, h))
         else:
-            polygons = clippath.to_polygons(clippath_trans, closed_only=False)
+            if _mpl_ge_2_0:
+                polygons = clippath.to_polygons(clippath_trans, closed_only=False)
+            else:
+                polygons = clippath.to_polygons(clippath_trans)
             list_canvas_instruction = self.get_path_instructions(gc, polygons,
                                                 rgbFace=(1.0, 1.0, 1.0, 1.0))
             for widget, instructions in list_canvas_instruction:
@@ -700,8 +706,12 @@ class RendererKivy(RendererBase):
            rendering. Paths are received in matplotlib coordinates. The
            aesthetics is defined by the `GraphicsContextKivy` gc.
         '''
-        polygons = path.to_polygons(transform, self.widget.width,
-                                    self.widget.height, closed_only=False)
+        if _mpl_ge_2_0:
+            polygons = path.to_polygons(transform, self.widget.width,
+                                        self.widget.height, closed_only=False)
+        else:
+            polygons = path.to_polygons(transform, self.widget.width,
+                                        self.widget.height)
         list_canvas_instruction = self.get_path_instructions(gc, polygons,
                                     closed=True, rgbFace=rgbFace)
         for widget, instructions in list_canvas_instruction:
@@ -728,7 +738,10 @@ class RendererKivy(RendererBase):
         list_instructions = self._markers.get(dictkey)
         # creating a list of instructions for the specific marker.
         if list_instructions is None:
-            polygons = marker_path.to_polygons(marker_trans, closed_only=False)
+            if _mpl_ge_2_0:
+                polygons = marker_path.to_polygons(marker_trans, closed_only=False)
+            else:
+                polygons = marker_path.to_polygons(marker_trans)
             self._markers[dictkey] = self.get_path_instructions(gc,
                                         polygons, rgbFace=rgbFace)
         # Traversing all the positions where a marker should be rendered

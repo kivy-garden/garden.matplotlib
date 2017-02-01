@@ -1189,9 +1189,9 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         '''
         w, h = self.size
         dpival = self.figure.dpi
-        winch = w / dpival
-        hinch = h / dpival
-        self.figure.set_size_inches(winch, hinch)
+        winch = float(w) / dpival
+        hinch = float(h) / dpival
+        self.figure.set_size_inches(winch, hinch, forward=False)
         self.resize_event()
         self.draw()
 
@@ -1253,14 +1253,14 @@ class FigureManagerKivy(FigureManagerBase):
         pass
 
     def get_window_title(self):
-        return EventLoop.window.title
+        return Window.title
 
     def set_window_title(self, title):
-        EventLoop.window.title = title
+        Window.title = title
 
     def resize(self, w, h):
         if (w > 0) and (h > 0):
-            EventLoop.window.size = (w, h)
+            Window.size = w, h
 
     def _get_toolbar(self):
         if rcParams['toolbar'] == 'toolbar2':

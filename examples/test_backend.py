@@ -37,7 +37,7 @@ def motionnotify(event):
 
 
 def resize(event):
-    print('resize from mpl ', event)
+    print('resize from mpl ', event.width, event.height)
 
 
 def scroll(event):

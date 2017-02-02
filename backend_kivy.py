@@ -300,7 +300,7 @@ from kivy.clock import Clock
 from distutils.version import LooseVersion
 
 _mpl_ge_1_5 = LooseVersion(matplotlib.__version__) >= LooseVersion('1.5.0')
-_mpl_ge_2_0 = LooseVersion(matplotlib.__version__) >= LooseVersion('2.0.0rc1')
+_mpl_ge_2_0 = LooseVersion(matplotlib.__version__) >= LooseVersion('2.0.0')
 
 import numpy as np
 import io

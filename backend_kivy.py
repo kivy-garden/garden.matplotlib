@@ -300,7 +300,7 @@ from kivy.clock import Clock
 from distutils.version import LooseVersion
 
 _mpl_ge_1_5 = LooseVersion(matplotlib.__version__) >= LooseVersion('1.5.0')
-_mpl_ge_2_0 = LooseVersion(matplotlib.__version__) >= LooseVersion('2.0.0rc1')
+_mpl_ge_2_0 = LooseVersion(matplotlib.__version__) >= LooseVersion('2.0.0')
 
 import numpy as np
 import io
@@ -553,7 +553,7 @@ class RendererKivy(RendererBase):
                         mode=str("triangle_fan")
                     ))
         instruction_group.add(Color(*gc.get_rgb()))
-        if _mpl_ge_1_5 and not _mpl_ge_2_0 and closed:
+        if _mpl_ge_1_5 and (not _mpl_ge_2_0) and closed:
             points_poly_line = points_line[:-2]
         else:
             points_poly_line = points_line
@@ -562,7 +562,7 @@ class RendererKivy(RendererBase):
                 width=int(gc.line['width'] / 2),
                 dash_length=gc.line['dash_length'],
                 dash_offset=gc.line['dash_offset'],
-                dash_joint=gc.line['joint_style'],
+                dash_joint=gc.line['join_style'],
                 dash_list=gc.line['dash_list']))
         return instruction_group
 
@@ -944,7 +944,7 @@ class GraphicsContextKivy(GraphicsContextBase, object):
         super(GraphicsContextKivy, self).__init__()
         self.renderer = renderer
         self.line['cap_style'] = self.get_capstyle()
-        self.line['joint_style'] = self.get_joinstyle()
+        self.line['join_style'] = self.get_joinstyle()
         self.line['dash_offset'] = None
         self.line['dash_length'] = None
         self.line['dash_list'] = []

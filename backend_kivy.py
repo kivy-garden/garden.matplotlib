@@ -1196,6 +1196,9 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         self.resize_event()
         self.draw()
 
+    def on_deleted(self, instance, value):
+        self.close_event()
+
     def callback(self, *largs):
         self.draw()
 

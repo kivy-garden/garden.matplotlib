@@ -919,6 +919,9 @@ class NavigationToolbar2Kivy(NavigationToolbar2):
                                     size=(rect[2], rect[3])))
         self.canvas.canvas.add(self.lastrect)
 
+    def dynamic_update(self):
+        self.canvas.draw_idle()
+
     def release_zoom(self, event):
         self.lastrect = None
         return super(NavigationToolbar2Kivy, self).release_zoom(event)
@@ -1056,6 +1059,9 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         self.figure = figure
         super(FigureCanvasKivy, self).__init__(figure=self.figure, **kwargs)
 
+        # Create a trigger to draw every 1 ms seconds.
+        self._draw_idle_trigger = Clock.create_trigger(self._draw_idle_event, 1 / 1000)
+
     def draw(self):
         '''Draw the figure using the KivyRenderer
         '''
@@ -1063,6 +1069,16 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         self.canvas.clear()
         self._renderer = RendererKivy(self)
         self.figure.draw(self._renderer)
+
+
+    def draw_idle(self, *args, **kwargs):
+        self._draw_idle_trigger()
+
+    def _draw_idle_event(self, *args):
+        """ Separating this for purpose of debugging etc.
+
+        """
+        self.draw()
 
     def on_touch_down(self, touch):
         '''Kivy Event to trigger the following matplotlib events:

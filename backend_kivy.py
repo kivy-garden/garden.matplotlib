@@ -244,7 +244,7 @@ import os
 import matplotlib
 import matplotlib.transforms as transforms
 from matplotlib._pylab_helpers import Gcf
-from matplotlib.backend_bases import RendererBase, GraphicsContextBase,\
+from matplotlib.backend_bases import RendererBase, GraphicsContextBase, \
     FigureManagerBase, FigureCanvasBase, NavigationToolbar2, TimerBase
 from matplotlib.figure import Figure
 from matplotlib.transforms import Bbox, Affine2D
@@ -270,8 +270,8 @@ from kivy.uix.label import Label
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.behaviors import FocusBehavior
 from kivy.uix.actionbar import ActionBar, ActionView, \
-                                ActionButton, ActionToggleButton, \
-                                ActionPrevious, ActionOverflow, ActionSeparator
+    ActionButton, ActionToggleButton, \
+    ActionPrevious, ActionOverflow, ActionSeparator
 from kivy.base import EventLoop
 from kivy.core.text import Label as CoreLabel
 from kivy.core.image import Image
@@ -280,8 +280,8 @@ from kivy.graphics import Rotate, Translate
 from kivy.graphics.instructions import InstructionGroup
 from kivy.graphics.tesselator import Tesselator
 from kivy.graphics.context_instructions import PopMatrix, PushMatrix
-from kivy.graphics import StencilPush, StencilPop, StencilUse,\
-                                StencilUnUse
+from kivy.graphics import StencilPush, StencilPop, StencilUse, \
+    StencilUnUse
 from kivy.logger import Logger
 from kivy.graphics import Mesh
 from kivy.resources import resource_find
@@ -353,11 +353,13 @@ class Show(ShowBase):
     '''mainloop needs to be overwritten to define the show() behavior for kivy
        framework.
     '''
+
     def mainloop(self):
         app = App.get_running_app()
         if app is None:
             app = MPLKivyApp(figure=my_canvas, toolbar=toolbar)
             app.run()
+
 
 show = Show()
 
@@ -396,6 +398,7 @@ class RendererKivy(RendererBase):
        as axes. The rest of the render is performed using kivy graphics
        instructions.
     '''
+
     def __init__(self, widget):
         super(RendererKivy, self).__init__()
         self.widget = widget
@@ -449,9 +452,9 @@ class RendererKivy(RendererBase):
             return -2
 
     def draw_path_collection(self, gc, master_transform, paths, all_transforms,
-        offsets, offsetTrans, facecolors, edgecolors,
-        linewidths, linestyles, antialiaseds, urls,
-        offset_position):
+                             offsets, offsetTrans, facecolors, edgecolors,
+                             linewidths, linestyles, antialiaseds, urls,
+                             offset_position):
         '''Draws a collection of paths selecting drawing properties from
            the lists *facecolors*, *edgecolors*, *linewidths*,
            *linestyles* and *antialiaseds*. *offsets* is a list of
@@ -476,7 +479,7 @@ class RendererKivy(RendererBase):
         # Generate an array of unique paths with the respective transformations
         path_codes = []
         for i, (path, transform) in enumerate(self._iter_collection_raw_paths(
-            master_transform, paths, all_transforms)):
+                master_transform, paths, all_transforms)):
             transform = Affine2D(transform.get_matrix()).scale(1.0, -1.0)
             if _mpl_ge_2_0:
                 polygons = path.to_polygons(transform, closed_only=False)
@@ -487,11 +490,11 @@ class RendererKivy(RendererBase):
         # the list. Additionally a transformation is being applied to
         # translate each independent path
         for xo, yo, path_poly, gc0, rgbFace in self._iter_collection(
-            gc, master_transform, all_transforms, path_codes, offsets,
-            offsetTrans, facecolors, edgecolors, linewidths, linestyles,
-            antialiaseds, urls, offset_position):
+                gc, master_transform, all_transforms, path_codes, offsets,
+                offsetTrans, facecolors, edgecolors, linewidths, linestyles,
+                antialiaseds, urls, offset_position):
             list_canvas_instruction = self.get_path_instructions(gc0, path_poly,
-                                    closed=True, rgbFace=rgbFace)
+                                                                 closed=True, rgbFace=rgbFace)
             for widget, instructions in list_canvas_instruction:
                 widget.canvas.add(PushMatrix())
                 widget.canvas.add(Translate(xo, yo))
@@ -528,12 +531,12 @@ class RendererKivy(RendererBase):
             newclip = self.handle_clip_rectangle(gc, x, y)
             if newclip > -1:
                 instructions_list.append((self.clip_rectangles[newclip],
-                        self.get_graphics(gc, tess, points_line, rgbFace,
-                                          closed=closed)))
+                                          self.get_graphics(gc, tess, points_line, rgbFace,
+                                                            closed=closed)))
             else:
                 instructions_list.append((self.widget,
-                        self.get_graphics(gc, tess, points_line, rgbFace,
-                                          closed=closed)))
+                                          self.get_graphics(gc, tess, points_line, rgbFace,
+                                                            closed=closed)))
         return instructions_list
 
     def get_graphics(self, gc, polygons, points_line, rgbFace, closed=False):
@@ -559,11 +562,11 @@ class RendererKivy(RendererBase):
             points_poly_line = points_line
         if gc.line['width'] > 0:
             instruction_group.add(Line(points=points_poly_line,
-                width=int(gc.line['width'] / 2),
-                dash_length=gc.line['dash_length'],
-                dash_offset=gc.line['dash_offset'],
-                dash_joint=gc.line['join_style'],
-                dash_list=gc.line['dash_list']))
+                                       width=int(gc.line['width'] / 2),
+                                       dash_length=gc.line['dash_length'],
+                                       dash_offset=gc.line['dash_offset'],
+                                       dash_joint=gc.line['join_style'],
+                                       dash_list=gc.line['dash_list']))
         return instruction_group
 
     def draw_image(self, gc, x, y, im):
@@ -599,7 +602,7 @@ class RendererKivy(RendererBase):
             else:
                 polygons = clippath.to_polygons(clippath_trans)
             list_canvas_instruction = self.get_path_instructions(gc, polygons,
-                                                rgbFace=(1.0, 1.0, 1.0, 1.0))
+                                                                 rgbFace=(1.0, 1.0, 1.0, 1.0))
             for widget, instructions in list_canvas_instruction:
                 widget.canvas.add(StencilPush())
                 widget.canvas.add(instructions)
@@ -662,7 +665,7 @@ class RendererKivy(RendererBase):
                 plot_text = CoreLabel(font_size=prop.get_size_in_points(), color=color)
             else:
                 plot_text = CoreLabel(font_size=prop.get_size_in_points(),
-                                font_name=prop.get_name(), color=color)
+                                      font_name=prop.get_name(), color=color)
             plot_text.text = six.text_type("{}".format(s))
             if prop.get_style() == 'italic':
                 plot_text.italic = True
@@ -713,12 +716,12 @@ class RendererKivy(RendererBase):
             polygons = path.to_polygons(transform, self.widget.width,
                                         self.widget.height)
         list_canvas_instruction = self.get_path_instructions(gc, polygons,
-                                    closed=True, rgbFace=rgbFace)
+                                                             closed=True, rgbFace=rgbFace)
         for widget, instructions in list_canvas_instruction:
             widget.canvas.add(instructions)
 
     def draw_markers(self, gc, marker_path, marker_trans, path,
-        trans, rgbFace=None):
+                     trans, rgbFace=None):
         '''Markers graphics instructions are stored on a dictionary and
            hashed through graphics context and rgbFace values. If a marker_path
            with the corresponding graphics context exist then the instructions
@@ -743,7 +746,7 @@ class RendererKivy(RendererBase):
             else:
                 polygons = marker_path.to_polygons(marker_trans)
             self._markers[dictkey] = self.get_path_instructions(gc,
-                                        polygons, rgbFace=rgbFace)
+                                                                polygons, rgbFace=rgbFace)
         # Traversing all the positions where a marker should be rendered
         for vertices, codes in path.iter_segments(trans, simplify=False):
             if len(vertices):
@@ -790,7 +793,7 @@ class RendererKivy(RendererBase):
             plot_text = CoreLabel(font_size=prop.get_size_in_points())
         else:
             plot_text = CoreLabel(font_size=prop.get_size_in_points(),
-                            font_name=prop.get_name())
+                                  font_name=prop.get_name())
         plot_text.text = six.text_type("{}".format(s))
         plot_text.refresh()
         return plot_text.texture.size[0], plot_text.texture.size[1], 1
@@ -905,19 +908,22 @@ class NavigationToolbar2Kivy(NavigationToolbar2):
     def draw_rubberband(self, event, x0, y0, x1, y1):
         w = abs(x1 - x0)
         h = abs(y1 - y0)
-        rect = [int(val)for val in (min(x0, x1) + self.canvas.x, min(y0, y1)
-                        + self.canvas.y, w, h)]
+        rect = [int(val) for val in (min(x0, x1) + self.canvas.x, min(y0, y1)
+                                     + self.canvas.y, w, h)]
         if self.lastrect is None:
             self.canvas.canvas.add(Color(*self.rubberband_color))
         else:
             self.canvas.canvas.remove(self.lastrect)
         self.lastrect = InstructionGroup()
         self.lastrect.add(Line(rectangle=rect, width=1.0, dash_length=5.0,
-                dash_offset=5.0))
+                               dash_offset=5.0))
         self.lastrect.add(Color(1.0, 0.0, 0.0, 0.2))
         self.lastrect.add(Rectangle(pos=(rect[0], rect[1]),
                                     size=(rect[2], rect[3])))
         self.canvas.canvas.add(self.lastrect)
+
+    def dynamic_update(self):
+        self.canvas.draw_idle()
 
     def release_zoom(self, event):
         self.lastrect = None
@@ -1023,6 +1029,7 @@ class TimerKivy(TimerBase):
         upon timer events. This list can be manipulated directly, or the
         functions add_callback and remove_callback can be used.
     '''
+
     def _timer_start(self):
         # Need to stop it, otherwise we potentially leak a timer id that will
         # never be stopped.
@@ -1054,6 +1061,10 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         self.bind(pos=self._on_pos_changed)
         self.entered_figure = True
         self.figure = figure
+
+        # Create a trigger to draw on the next frame
+        self._draw_idle_trigger = Clock.create_trigger(self._draw_idle_event)
+        self.blitbox = None
         super(FigureCanvasKivy, self).__init__(figure=self.figure, **kwargs)
 
     def draw(self):
@@ -1063,6 +1074,15 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         self.canvas.clear()
         self._renderer = RendererKivy(self)
         self.figure.draw(self._renderer)
+
+    def draw_idle(self, *args, **kwargs):
+        self._draw_idle_trigger()
+
+    def _draw_idle_event(self, *args):
+        """ Separating this for purpose of debugging etc.
+
+        """
+        self.draw()
 
     def on_touch_down(self, touch):
         '''Kivy Event to trigger the following matplotlib events:
@@ -1145,7 +1165,7 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         '''
         self.key_press_event(keycode[1], guiEvent=None)
         return super(FigureCanvasKivy, self).keyboard_on_key_down(window,
-                                                    keycode, text, modifiers)
+                                                                  keycode, text, modifiers)
 
     def keyboard_on_key_up(self, window, keycode):
         '''Kivy event to trigger matplotlib `key_release_event`.
@@ -1203,7 +1223,9 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         '''If bbox is None, blit the entire canvas to the widget. Otherwise
            blit only the area defined by the bbox.
         '''
+
         self.blitbox = bbox
+        self.draw_idle()
 
     filetypes = FigureCanvasBase.filetypes.copy()
     filetypes['png'] = 'Portable Network Graphics'
@@ -1217,7 +1239,7 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         l, b, w, h = self.figure.bbox.bounds
         texture = Texture.create(size=(w, h))
         texture.blit_buffer(bytes(fig.get_renderer().buffer_rgba()),
-                                colorfmt='rgba', bufferfmt='ubyte')
+                            colorfmt='rgba', bufferfmt='ubyte')
         texture.flip_vertical()
         img = Image(texture)
         img.save(filename)
@@ -1269,6 +1291,7 @@ class FigureManagerKivy(FigureManagerBase):
         else:
             toolbar = None
         return toolbar
+
 
 '''Now just provide the standard names that backend.__init__ is expecting
 '''

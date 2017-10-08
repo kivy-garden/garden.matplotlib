@@ -73,7 +73,7 @@ import six
 
 import matplotlib
 from matplotlib._pylab_helpers import Gcf
-from matplotlib.backend_bases import RendererBase, GraphicsContextBase,\
+from matplotlib.backend_bases import RendererBase, GraphicsContextBase, \
     FigureManagerBase, FigureCanvasBase
 from matplotlib.figure import Figure
 from matplotlib.transforms import Bbox
@@ -93,9 +93,9 @@ from kivy.properties import ObjectProperty
 from kivy.base import EventLoop
 from kivy.uix.floatlayout import FloatLayout
 from kivy.core.image import Image
-from kivy.garden.matplotlib.backend_kivy import FigureCanvasKivy,\
-                            FigureManagerKivy, show, new_figure_manager,\
-                            NavigationToolbar2Kivy
+from kivy.garden.matplotlib.backend_kivy import FigureCanvasKivy, \
+    FigureManagerKivy, show, new_figure_manager, \
+    NavigationToolbar2Kivy
 
 register_backend('png', 'backend_kivyagg', 'PNG File Format')
 
@@ -152,6 +152,7 @@ class Show(ShowBase):
     '''mainloop needs to be overwritten to define the show() behavior for kivy
        framework.
     '''
+
     def mainloop(self):
         global my_canvas
         global toolbar
@@ -159,6 +160,7 @@ class Show(ShowBase):
         if app is None:
             app = MPLKivyApp(figure=my_canvas, toolbar=toolbar)
             app.run()
+
 
 show = Show()
 
@@ -174,37 +176,64 @@ class FigureCanvasKivyAgg(FigureCanvasKivy, FigureCanvasAgg):
         super(FigureCanvasKivyAgg, self).__init__(figure=self.figure, **kwargs)
         self.img_texture = None
         self.img_rect = None
-        self.blit()
 
     def draw(self):
         '''
         Draw the figure using the agg renderer
         '''
-        self.canvas.clear()
-        FigureCanvasAgg.draw(self)
+
         if self.blitbox is None:
+            self.canvas.clear()
+            FigureCanvasAgg.draw(self)
             l, b, w, h = self.figure.bbox.bounds
             w, h = int(w), int(h)
             buf_rgba = self.get_renderer().buffer_rgba()
+
+            texture = Texture.create(size=(w, h))
+            texture.flip_vertical()
+            color = self.figure.get_facecolor()
+            texture.blit_buffer(bytes(buf_rgba), colorfmt='rgba', bufferfmt='ubyte')
+            self.img_texture = texture
+
+            with self.canvas:
+                Color(*color)
+                Rectangle(pos=self.pos, size=(w, h))
+                Color(1.0, 1.0, 1.0, 1.0)
+                self.img_rect = Rectangle(texture=texture, pos=self.pos, size=(w, h))
         else:
             bbox = self.blitbox
+            self.blitbox = None
+
+            # Should convert to figure canvas coord. See under pos in with canvas.
             l, b, r, t = bbox.extents
             w = int(r) - int(l)
             h = int(t) - int(b)
-            t = int(b) + h
             reg = self.copy_from_bbox(bbox)
             buf_rgba = reg.to_string()
-        texture = Texture.create(size=(w, h))
-        texture.flip_vertical()
-        color = self.figure.get_facecolor()
-        with self.canvas:
-            Color(*color)
-            Rectangle(pos=self.pos, size=(w, h))
-            Color(1.0, 1.0, 1.0, 1.0)
-            self.img_rect = Rectangle(texture=texture, pos=self.pos,
-                                      size=(w, h))
-        texture.blit_buffer(bytes(buf_rgba), colorfmt='rgba', bufferfmt='ubyte')
-        self.img_texture = texture
+
+            # Reuse the img_texture
+            if self.img_texture is not None:
+                w_old, h_old = self.img_texture.size
+
+                if w != w_old or h != h_old:
+                    texture = Texture.create(size=(w, h))
+                    texture.flip_vertical()
+                else:
+                    texture = self.img_texture
+
+            else:
+                texture = Texture.create(size=(w, h))
+                texture.flip_vertical()
+
+            # Blit the bbox to texture.
+            texture.blit_buffer(bytes(buf_rgba), colorfmt='rgba', bufferfmt='ubyte')
+
+            self.img_texture = texture
+            self.img_texture.blit_buffer(bytes(buf_rgba), colorfmt='rgba', bufferfmt='ubyte')
+
+            with self.canvas:
+                pos = (self.pos[0] + l, self.pos[1] + b)
+                self.img_rect = Rectangle(texture=texture, pos=pos, size=(w, h))
 
     filetypes = FigureCanvasKivy.filetypes.copy()
     filetypes['png'] = 'Portable Network Graphics'
@@ -227,6 +256,7 @@ class FigureCanvasKivyAgg(FigureCanvasKivy, FigureCanvasAgg):
         else:
             img = Image(self.img_texture)
         img.save(filename)
+
 
 ''' Standard names that backend.__init__ is expecting '''
 FigureCanvas = FigureCanvasKivyAgg

@@ -1107,7 +1107,8 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
            `motion_notify_event`, `scroll_event`, `button_press_event`,
            `enter_notify_event` and `leave_notify_event`
         '''
-        newcoord = self.to_widget(touch.x, touch.y, relative=True)
+        x0,y0 = self.to_window(touch.x,touch.y)
+        newcoord = self.to_widget(x0,y0, relative=True)
         x = newcoord[0]
         y = newcoord[1]
 
@@ -1133,7 +1134,8 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         '''Kivy Event to trigger the following matplotlib events:
            `motion_notify_event`, `enter_notify_event` and `leave_notify_event`
         '''
-        newcoord = self.to_widget(touch.x, touch.y, relative=True)
+        x0,y0 = self.to_window(touch.x,touch.y)
+        newcoord = self.to_widget(x0,y0, relative=True)
         x = newcoord[0]
         y = newcoord[1]
         inside = self.collide_point(touch.x, touch.y)
@@ -1165,7 +1167,8 @@ class FigureCanvasKivy(FocusBehavior, Widget, FigureCanvasBase):
         '''Kivy Event to trigger the following matplotlib events:
            `scroll_event` and `button_release_event`.
         '''
-        newcoord = self.to_widget(touch.x, touch.y, relative=True)
+        x0,y0 = self.to_window(touch.x,touch.y)
+        newcoord = self.to_widget(x0,y0, relative=True)
         x = newcoord[0]
         y = newcoord[1]
         if touch.grab_current is self:

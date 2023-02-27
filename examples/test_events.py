@@ -4,7 +4,7 @@ from kivy.uix.boxlayout import BoxLayout
 
 import numpy as np
 import matplotlib.pyplot as plt
-from kivy.garden.matplotlib.backend_kivyagg import FigureCanvas
+from kivy_garden.matplotlib.backend_kivyagg import FigureCanvas
 
 
 def enter_axes(event):

@@ -93,7 +93,7 @@ from kivy.properties import ObjectProperty
 from kivy.base import EventLoop
 from kivy.uix.floatlayout import FloatLayout
 from kivy.core.image import Image
-from kivy.garden.matplotlib.backend_kivy import FigureCanvasKivy,\
+from .backend_kivy import FigureCanvasKivy,\
                             FigureManagerKivy, show, new_figure_manager,\
                             NavigationToolbar2Kivy
 

@@ -22,7 +22,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 
-dependencies = ["matplotlib"]
+dependencies = ["matplotlib >= 3.0.0"]
 
 [tool.setuptools]
 packages = ["kivy_garden.matplotlib"]

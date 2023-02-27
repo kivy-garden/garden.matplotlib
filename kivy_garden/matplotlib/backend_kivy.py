@@ -352,7 +352,8 @@ class Show(ShowBase):
     '''mainloop needs to be overwritten to define the show() behavior for kivy
        framework.
     '''
-    def mainloop(self):
+    @classmethod
+    def mainloop(cls):
         app = App.get_running_app()
         if app is None:
             app = MPLKivyApp(figure=my_canvas, toolbar=toolbar)
@@ -401,7 +402,7 @@ class RendererKivy(RendererBase):
         self.dpi = widget.figure.dpi
         self._markers = {}
         #  Can be enhanced by using TextToPath matplotlib, textpath.py
-        self.mathtext_parser = MathTextParser("Bitmap")
+        self.mathtext_parser = MathTextParser("path")
         self.list_goraud_triangles = []
         self.clip_rectangles = []
         self.labels_inside_plot = []

@@ -152,7 +152,8 @@ class Show(ShowBase):
     '''mainloop needs to be overwritten to define the show() behavior for kivy
        framework.
     '''
-    def mainloop(self):
+    @classmethod
+    def mainloop(cls):
         global my_canvas
         global toolbar
         app = App.get_running_app()
